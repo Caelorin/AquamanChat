@@ -150,7 +150,7 @@ export async function simulateMultipleMessages(
     if (i > 0) {
       // 真人发消息的间隔：短间隔(300-800ms)、中间隔(1-2s)、长间隔(2-3s)
       const randomType = Math.random();
-      let delay;
+      let delay: number;
       
       if (randomType < 0.5) {
         // 50% 概率短间隔 - 快速连发
