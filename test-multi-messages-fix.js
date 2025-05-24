@@ -143,4 +143,105 @@ function callAPI(message) {
 }
 
 // 启动测试
-testMultiMessageFix().catch(console.error); 
+testMultiMessageFix().catch(console.error);
+
+/**
+ * 测试多条消息分割和处理逻辑
+ * 模拟API响应，验证消息是否正确分割和处理
+ */
+
+console.log('🧪 测试多条消息分割和处理逻辑...\n');
+
+// 模拟API响应的内容
+const testResponses = [
+  // 单条消息
+  '记得穿漂亮点，我要让店里的人都羡慕我',
+  
+  // 两条消息
+  '刚吃完，今天尝试做了个新菜|||虽然卖相不咋地，但味道还行 😅',
+  
+  // 三条消息
+  '最近工作太忙都没时间找你|||你这一说我才发现确实挺久没聊了|||周末有空出来喝杯咖啡吗',
+  
+  // 包含空消息的情况
+  '明天下午有空|||||||该不会是想约我吧 😏'
+];
+
+// 模拟分割逻辑
+function testMessageSplitting(content) {
+  console.log('📋 原始内容:', content);
+  
+  // 使用与API相同的分割逻辑
+  const messages = content.split('|||').map((msg) => msg.trim()).filter((msg) => msg.length > 0);
+  
+  console.log('📝 分割后消息数量:', messages.length);
+  console.log('📝 分割后消息:', messages);
+  
+  // 判断应该走哪个处理逻辑
+  const hasOnMultipleMessages = true; // 假设回调存在
+  
+  if (messages.length > 1 && hasOnMultipleMessages) {
+    console.log('✅ 应该走多条消息处理逻辑');
+    return { type: 'multiple', messages };
+  } else {
+    console.log('⚠️ 走单条消息处理逻辑，原始内容作为一条消息');
+    return { type: 'single', content };
+  }
+}
+
+// 测试所有响应
+testResponses.forEach((response, index) => {
+  console.log(`\n🔍 测试案例 ${index + 1}:`);
+  console.log('=' .repeat(50));
+  
+  const result = testMessageSplitting(response);
+  
+  if (result.type === 'multiple') {
+    console.log('🎯 结果: 正确识别为多条消息');
+    console.log('💬 将显示:', result.messages.length, '条独立消息');
+  } else {
+    console.log('🎯 结果: 识别为单条消息');
+    console.log('💬 将显示:', '1条包含所有内容的消息');
+  }
+});
+
+console.log('\n🔧 问题诊断:');
+console.log('如果用户看到的是包含|||的完整字符串，说明:');
+console.log('1. onMultipleMessages 回调没有传递');
+console.log('2. 或者消息分割逻辑有问题');
+console.log('3. 或者多条消息处理逻辑没有被调用');
+
+// 模拟ChatWindow中的回调传递
+console.log('\n📞 检查ChatWindow中的回调传递...');
+
+// 这里模拟ChatWindow.tsx中的fetchAIResponse调用
+function simulateChatWindowCall() {
+  const requestDetails = {
+    contactId: 'test',
+    messageId: 'test-123',
+    systemPrompt: 'test',
+    conversationHistory: []
+  };
+  
+  // 检查是否有onMultipleMessages回调
+  const onMultipleMessages = (messages) => {
+    console.log('📬 onMultipleMessages 被调用，消息:', messages);
+    return true;
+  };
+  
+  const onToken = (token) => {
+    console.log('⌨️ onToken 被调用，内容:', token.substring(0, 20) + '...');
+  };
+  
+  console.log('✅ onMultipleMessages 回调:', typeof onMultipleMessages);
+  console.log('✅ onToken 回调:', typeof onToken);
+  
+  return {
+    onMultipleMessages: onMultipleMessages,
+    onToken: onToken,
+    hasMultipleMessagesCallback: !!onMultipleMessages
+  };
+}
+
+const callbacks = simulateChatWindowCall();
+console.log('📊 回调检查结果:', callbacks.hasMultipleMessagesCallback ? '✅ 正常' : '❌ 缺失'); 

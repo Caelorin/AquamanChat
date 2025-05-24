@@ -66,9 +66,11 @@ export async function fetchAIResponse({
       console.log('📝 解析消息数量:', messages.length);
       
       if (messages.length > 1 && onMultipleMessages) {
-        // 处理多条消息
+        // 处理多条消息 - 注意：onComplete将在simulateMultipleMessages内部调用
         console.log('🔄 处理多条消息:', messages);
         onMultipleMessages(messages);
+        // 多条消息处理是异步的，onComplete会在simulateMultipleMessages中调用
+        return; // 提前返回，不要调用onComplete
       } else {
         // 单条消息，使用原有逻辑
         console.log('⌨️ 开始打字效果...');
