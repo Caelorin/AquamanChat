@@ -113,12 +113,13 @@ const ChatWindow = ({
             simulateMultipleMessages(
               messages,
               async (message: string, isLast: boolean): Promise<void> => {
-                // 为每条消息生成独立的ID
-                const messageId = `${requestDetails.messageId}-${Date.now()}-${Math.random()}`;
-                
                 return new Promise((resolve) => {
                   setChatHistory(prev => {
                     const currentMessages = prev[requestDetails.contactId] || [];
+                    // 为每条消息生成独立的ID，使用消息在数组中的索引确保唯一性
+                    const messageIndex = messages.indexOf(message);
+                    const messageId = `${requestDetails.messageId}-multi-${messageIndex}-${Date.now()}`;
+                    
                     const aiReplyMessage: Message = {
                       id: messageId,
                       sender: 'user', // AI回复显示为用户自己的消息
@@ -126,7 +127,7 @@ const ChatWindow = ({
                       timestamp: new Date().toISOString(),
                     };
                     
-                    console.log(`📤 添加第${messages.indexOf(message) + 1}条消息:`, message);
+                    console.log(`📤 添加第${messageIndex + 1}条消息 (ID: ${messageId}):`, message);
                     
                     // 使用setTimeout确保状态更新完成后再resolve
                     setTimeout(() => {
