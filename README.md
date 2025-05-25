@@ -60,14 +60,66 @@ npm install
 yarn install
 ```
 
-3. **配置API密钥**
-在 `app/api/chat/route.ts` 中替换你的 DeepSeek API 密钥：
-```typescript
-const client = new OpenAI({
-  baseURL: 'https://api.deepseek.com',
-  apiKey: 'your-deepseek-api-key-here' // 替换为你的密钥
-});
+3. **配置环境变量**
+复制示例环境变量文件并配置你的API密钥：
+```bash
+cp .env.example .env.local
 ```
+
+然后在 `.env.local` 文件中填入你的 DeepSeek API 密钥：
+```bash
+# DeepSeek API 配置
+DEEPSEEK_API_KEY=your-deepseek-api-key-here
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-chat
+
+# API参数配置
+API_TEMPERATURE=0.7
+API_MAX_TOKENS=200
+```
+
+⚠️ **安全提示**: 
+- `.env.local` 文件已在 `.gitignore` 中，不会被提交到代码仓库
+- 请勿在代码中硬编码API密钥
+- 生产环境部署时，请在服务器环境变量中配置这些值
+
+### 🚀 生产环境部署
+
+**Vercel部署**：
+1. 在 [Vercel Dashboard](https://vercel.com/) 中导入项目
+2. 进入项目设置 → Environment Variables
+3. 添加以下环境变量：
+   - `DEEPSEEK_API_KEY`: 你的DeepSeek API密钥
+   - `DEEPSEEK_BASE_URL`: https://api.deepseek.com
+   - `DEEPSEEK_MODEL`: deepseek-chat
+   - `API_TEMPERATURE`: 0.7
+   - `API_MAX_TOKENS`: 200
+4. 重新部署项目
+
+**其他平台**：
+- **Netlify**: 在站点设置中配置环境变量
+- **自建服务器**: 设置系统环境变量或使用pm2等进程管理器
+
+### 🔄 自动部署设置
+
+**连接Git仓库到Vercel**：
+1. 将代码推送到GitHub/GitLab/Bitbucket仓库
+2. 在Vercel中导入项目时选择对应的Git仓库
+3. 配置环境变量（见上方说明）
+4. 部署完成后，每次push到主分支都会自动触发重新部署
+
+**推荐的Git工作流**：
+```bash
+# 提交代码到主分支触发自动部署
+git add .
+git commit -m "feat: 添加新功能"
+git push origin main
+```
+
+**部署状态检查**：
+- Vercel控制台可查看部署日志
+- GitHub Actions (可选) 提供额外的代码质量检查
+- 部署失败时会收到邮件通知
 
 4. **启动开发服务器**
 ```bash

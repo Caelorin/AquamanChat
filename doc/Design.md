@@ -450,6 +450,77 @@ const nextConfig = {
 
 ---
 
+## 14. 环境变量配置
+
+### 14.1 环境变量清单
+
+| 变量名 | 说明 | 默认值 | 是否必需 |
+|--------|------|---------|----------|
+| DEEPSEEK_API_KEY | DeepSeek API密钥 | 无 | ✅ |
+| DEEPSEEK_BASE_URL | DeepSeek API基础URL | https://api.deepseek.com | ❌ |
+| DEEPSEEK_MODEL | 使用的AI模型 | deepseek-chat | ❌ |
+| API_TEMPERATURE | AI回复的创造性参数 | 0.7 | ❌ |
+| API_MAX_TOKENS | 单次回复最大令牌数 | 200 | ❌ |
+
+### 14.2 配置方式
+
+**开发环境**:
+```bash
+# 创建 .env.local 文件
+DEEPSEEK_API_KEY=your-api-key-here
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-chat
+API_TEMPERATURE=0.7
+API_MAX_TOKENS=200
+```
+
+**生产环境**:
+- **Vercel**: 在项目设置中添加环境变量
+- **Netlify**: 在站点设置中配置环境变量  
+- **服务器部署**: 设置系统环境变量
+
+### 14.3 安全最佳实践
+
+1. **本地开发**: 使用`.env.local`文件，已被`.gitignore`忽略
+2. **代码审查**: 确保无API密钥硬编码
+3. **权限管理**: 限制API密钥的访问权限
+4. **定期轮换**: 定期更换API密钥
+5. **监控使用**: 监控API使用量，及时发现异常
+
+### 14.4 API路由安全设计
+
+```typescript
+// app/api/chat/route.ts 安全实现
+export async function POST(request: NextRequest) {
+  // 1. 环境变量验证
+  if (!process.env.DEEPSEEK_API_KEY) {
+    throw new Error('缺少必需的环境变量：DEEPSEEK_API_KEY');
+  }
+  
+  // 2. 请求体验证
+  const body = await request.json();
+  if (!body.conversationHistory) {
+    throw new Error('Invalid request body');
+  }
+  
+  // 3. API客户端配置（服务端）
+  const client = new OpenAI({
+    baseURL: process.env.DEEPSEEK_BASE_URL,
+    apiKey: process.env.DEEPSEEK_API_KEY
+  });
+  
+  // 4. 错误处理和备用回复
+  try {
+    const completion = await client.chat.completions.create({...});
+    return NextResponse.json({ success: true, content: completion.choices[0].message.content });
+  } catch (error) {
+    return NextResponse.json({ success: false, content: fallbackResponse });
+  }
+}
+```
+
+---
+
 **文档结束**
 
 *本文档将随着项目发展持续更新和完善* 

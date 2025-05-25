@@ -4,10 +4,20 @@ import { NextRequest, NextResponse } from 'next/server';
 // Next.js API路由配置
 export const runtime = 'nodejs';
 
-// DeepSeek API配置 - 完全按照官方文档格式
+// 从环境变量读取DeepSeek API配置
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+const DEEPSEEK_BASE_URL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com';
+const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat';
+
+// 验证环境变量
+if (!DEEPSEEK_API_KEY) {
+  throw new Error('缺少必需的环境变量：DEEPSEEK_API_KEY');
+}
+
+// DeepSeek API客户端配置 - 使用环境变量
 const client = new OpenAI({
-  baseURL: 'https://api.deepseek.com',
-  apiKey: 'sk-1c5d35d209824ef3bb63a8a8e85f9297'
+  baseURL: DEEPSEEK_BASE_URL,
+  apiKey: DEEPSEEK_API_KEY
 });
 
 // 海王撩妹系统提示词
@@ -118,17 +128,17 @@ export async function POST(request: NextRequest) {
       lastMessage: messages[messages.length - 1]
     });
 
-    // 调用DeepSeek API - 严格按照官方文档示例
+    // 调用DeepSeek API - 使用环境变量配置
     const startTime = Date.now();
     
     let completion;
     try {
       completion = await client.chat.completions.create({
-        model: "deepseek-chat", // 使用DeepSeek-V3模型
+        model: DEEPSEEK_MODEL, // 使用环境变量中的模型名称
         messages: messages,
         stream: false, // 非流式输出
-        temperature: 0.7,
-        max_tokens: 200
+        temperature: Number(process.env.API_TEMPERATURE) || 0.7,
+        max_tokens: Number(process.env.API_MAX_TOKENS) || 200
       });
     } catch (apiError: any) {
       console.error('❌ DeepSeek API调用失败:', {

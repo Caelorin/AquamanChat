@@ -1,10 +1,24 @@
-// DeepSeek API 测试 - 按照官方文档格式
+// DeepSeek API 测试 - 使用环境变量配置
 const OpenAI = require('openai');
+const path = require('path');
 
-// 严格按照官方文档配置
+// 加载环境变量
+require('dotenv').config({ path: path.join(__dirname, '.env.local') });
+
+// 从环境变量读取配置
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+const DEEPSEEK_BASE_URL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com';
+
+if (!DEEPSEEK_API_KEY) {
+  console.error('❌ 错误：缺少DEEPSEEK_API_KEY环境变量');
+  console.error('请确保已创建 .env.local 文件并配置了正确的API密钥');
+  process.exit(1);
+}
+
+// 使用环境变量配置客户端
 const client = new OpenAI({
-  baseURL: 'https://api.deepseek.com',
-  apiKey: 'sk-1c5d35d209824ef3bb63a8a8e85f9297'
+  baseURL: DEEPSEEK_BASE_URL,
+  apiKey: DEEPSEEK_API_KEY
 });
 
 // 测试基础对话
@@ -108,8 +122,8 @@ async function testConnection() {
 async function runAllTests() {
   console.log('🚀 开始DeepSeek API全面测试...');
   console.log('API配置:', {
-    baseURL: 'https://api.deepseek.com',
-    apiKey: 'sk-1c5d35d209824ef3bb63a8a8e85f9297'
+    baseURL: DEEPSEEK_BASE_URL,
+    apiKey: `${DEEPSEEK_API_KEY.substring(0, 8)}...` // 只显示前8位保护隐私
   });
   console.log('====================================');
   
