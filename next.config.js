@@ -11,12 +11,6 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['openai']
   },
-  // 确保API路由在Vercel上正常工作
-  api: {
-    bodyParser: {
-      sizeLimit: '1mb',
-    },
-  },
   // 为Vercel优化构建
   compress: true,
   poweredByHeader: false,

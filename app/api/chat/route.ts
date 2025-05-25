@@ -4,21 +4,31 @@ import { NextRequest, NextResponse } from 'next/server';
 // Next.js API路由配置
 export const runtime = 'nodejs';
 
-// 从环境变量读取DeepSeek API配置
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
-const DEEPSEEK_BASE_URL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com';
-const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat';
+// 获取环境变量的函数 - 在运行时调用，不在构建时
+function getEnvConfig() {
+  const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+  const DEEPSEEK_BASE_URL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com';
+  const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat';
 
-// 验证环境变量
-if (!DEEPSEEK_API_KEY) {
-  throw new Error('缺少必需的环境变量：DEEPSEEK_API_KEY');
+  if (!DEEPSEEK_API_KEY) {
+    throw new Error('缺少必需的环境变量：DEEPSEEK_API_KEY');
+  }
+
+  return {
+    DEEPSEEK_API_KEY,
+    DEEPSEEK_BASE_URL,
+    DEEPSEEK_MODEL
+  };
 }
 
-// DeepSeek API客户端配置 - 使用环境变量
-const client = new OpenAI({
-  baseURL: DEEPSEEK_BASE_URL,
-  apiKey: DEEPSEEK_API_KEY
-});
+// 创建OpenAI客户端的函数 - 在运行时调用
+function createOpenAIClient() {
+  const config = getEnvConfig();
+  return new OpenAI({
+    baseURL: config.DEEPSEEK_BASE_URL,
+    apiKey: config.DEEPSEEK_API_KEY
+  });
+}
 
 // 海王撩妹系统提示词
 const SYSTEM_PROMPT = `你是一个资深的恋爱导师和聊天专家，现在要帮助用户以男性身份与女生进行自然、有趣的对话。
@@ -130,11 +140,13 @@ export async function POST(request: NextRequest) {
 
     // 调用DeepSeek API - 使用环境变量配置
     const startTime = Date.now();
+    const config = getEnvConfig();
+    const client = createOpenAIClient();
     
     let completion;
     try {
       completion = await client.chat.completions.create({
-        model: DEEPSEEK_MODEL, // 使用环境变量中的模型名称
+        model: config.DEEPSEEK_MODEL, // 使用环境变量中的模型名称
         messages: messages,
         stream: false, // 非流式输出
         temperature: Number(process.env.API_TEMPERATURE) || 0.7,
